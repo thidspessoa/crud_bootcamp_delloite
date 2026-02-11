@@ -14,6 +14,33 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class UserRepository {
+    private String url = "jdbc:h2:file:./cruddb";
+    private String user = "sa";
+    private String password = "";
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 
     public UserRepository() {
         String sql = """
@@ -35,11 +62,9 @@ public class UserRepository {
     }
 
     private Connection getConnection() throws SQLException {
-        String url = "jdbc:h2:mem:cruddb";
-        String user = "sa";
-        String password = "";
 
-        return DriverManager.getConnection(url, user, password);
+
+        return DriverManager.getConnection(this.url, this.user, this.password);
     }
 
     public User save(User usuario) {
@@ -82,6 +107,7 @@ public class UserRepository {
 
             while (rs.next()) {
                 User usuario = new User(
+                        rs.getLong("id"),
                         rs.getString("nome"),
                         rs.getString("email")
                 );
@@ -113,6 +139,7 @@ public class UserRepository {
 
                 if (rs.next()) {
                     User user = new User(
+                            rs.getLong("id"),
                             rs.getString("nome"),
                             rs.getString("email")
                     );

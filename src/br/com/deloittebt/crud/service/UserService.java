@@ -15,8 +15,8 @@ public class UserService {
     }
 
     // CREATE
-    public void create(User user) {
-        userRepository.save(user);
+    public User create(User user) {
+       return userRepository.save(user);
     }
 
     // READ - LIST ALL
@@ -45,6 +45,9 @@ public class UserService {
 
         User user = optionalUser.get();
         user.setName(nome);
+        user.setEmail(email);
+
+        userRepository.update(user);
     }
 
     // DELETE

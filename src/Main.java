@@ -37,19 +37,21 @@ public class Main {
                         String email = scanner.nextLine();
 
                         User user = new User(nome, email);
-                        userService.create(user);
+                        User savedUser = userService.create(user);
 
-                        System.out.println("Usuário criado com sucesso!");
+                        // Exibi o estado atual do banco
+                        System.out.println("==============================");
+                        System.out.println("Usuário criado com sucesso.");
+                        viewData(userService);
+                        System.out.println("==============================");
+
                     }
 
                     case 2 -> {
-                        List<User> users = userService.findAll();
-
-                        if (users.isEmpty()) {
-                            System.out.println("Nenhum usuário cadastrado.");
-                        } else {
-                            users.forEach(System.out::println);
-                        }
+                        System.out.println("==============================");
+                        System.out.println("Usuarios cadastrados: ");
+                        viewData(userService);
+                        System.out.println("==============================");
                     }
 
                     case 3 -> {
@@ -57,7 +59,10 @@ public class Main {
                         long id = scanner.nextLong();
 
                         User user = userService.findById(id);
+
+                        System.out.println("==============================");
                         System.out.println(user);
+                        System.out.println("==============================");
                     }
 
                     case 4 -> {
@@ -72,7 +77,11 @@ public class Main {
                         String email = scanner.nextLine();
 
                         userService.update(id, nome, email);
+
+                        System.out.println("==============================");
                         System.out.println("Usuário atualizado com sucesso!");
+                        viewData(userService);
+                        System.out.println("==============================");
                     }
 
                     case 5 -> {
@@ -80,7 +89,11 @@ public class Main {
                         long id = scanner.nextLong();
 
                         userService.deleteById(id);
+
+                        System.out.println("==============================");
                         System.out.println("Usuário removido com sucesso!");
+                        viewData(userService);
+                        System.out.println("==============================");
                     }
 
                     case 0 -> {
@@ -99,4 +112,16 @@ public class Main {
 
         scanner.close();
     }
+
+    public static void viewData(UserService userService) {
+
+        List<User> users = userService.findAll();
+
+        if (users.isEmpty()) {
+            System.out.println("Nenhum usuário cadastrado.");
+        } else {
+            users.forEach(System.out::println);
+        }
+    }
+
 }
