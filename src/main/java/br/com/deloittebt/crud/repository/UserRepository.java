@@ -1,6 +1,6 @@
-package main.java.br.com.deloittebt.crud.repository;
+package br.com.deloittebt.crud.repository;
 
-import main.java.br.com.deloittebt.crud.model.User;
+import br.com.deloittebt.crud.model.User;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,181 +13,208 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 
+/**
+ * Classe responsável exclusivamente pela persistência da entidade User.
+ * Seu papel é encapsular toda a lógica de acesso a dados (JDBC).
+ * Não deve conter regras de negócio.
+ */
 public class UserRepository {
-    private String url = "jdbc:h2:file:./cruddb";
-    private String user = "sa";
-    private String password = "";
+    private static final String url = "jdbc:h2:file:./cruddb";
+    private static final String user = "sa";
+    private static final String password = "";
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
+    /**
+     * Construtor responsável por garantir que a tabela exista.
+     */
     public UserRepository() {
+        createTableIfNotExists();
+    }
+
+    /**
+     * Cria a tabela caso ainda não exista.
+     */
+    private void createTableIfNotExists() {
+
         String sql = """
-            CREATE TABLE IF NOT EXISTS usuarios (
-                id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                nome VARCHAR(100) NOT NULL,
-                email VARCHAR(100) NOT NULL
-            )
-        """;
+                CREATE TABLE IF NOT EXISTS usuarios (
+                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    nome VARCHAR(100) NOT NULL,
+                    email VARCHAR(100) NOT NULL
+                )
+                """;
 
-        try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement()) {
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement()) {
 
-            stmt.execute(sql);
+            statement.execute(sql);
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao criar tabela de usuários", e);
+            throw new IllegalStateException("Erro ao criar tabela de usuários.", e);
         }
     }
 
+    /**
+     * Obtém uma conexão com o banco de dados.
+     * @return Connection
+     */
     private Connection getConnection() throws SQLException {
-
-
         return DriverManager.getConnection(this.url, this.user, this.password);
     }
 
-    public User save(User usuario) {
+    /**
+     * Persiste um novo usuário.
+     * @param user usuário a ser salvo
+     * @return User ->  usuário com ID gerado
+     */
+    public User save(User user) {
 
         String sql = "INSERT INTO usuarios (nome, email) VALUES (?, ?)";
 
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(
                      sql,
-                     Statement.RETURN_GENERATED_KEYS
-             )) {
+                     Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setString(1, usuario.getName());
-            stmt.setString(2, usuario.getEmail());
+            statement.setString(1, user.getName());
+            statement.setString(2, user.getEmail());
 
-            stmt.executeUpdate();
+            statement.executeUpdate();
 
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
+            try (ResultSet rs = statement.getGeneratedKeys()) {
                 if (rs.next()) {
-                    usuario.setId(rs.getLong(1));
+                    Long generatedId = rs.getLong(1);
+                    user.assignId(generatedId); // Regra de negocio para atualizar ID apos persistência
                 }
             }
 
-            return usuario;
+            return user;
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao salvar usuário", e);
+            throw new IllegalStateException("Erro ao salvar usuário.", e);
         }
     }
 
+    /**
+     * Retorna todos os usuários cadastrados.
+     * @return List<User>
+     */
     public List<User> findAll() {
 
-        List<User> usuarios = new ArrayList<>();
+        final String sql = "SELECT id, nome, email FROM usuarios";
 
-        String sql = "SELECT id, nome, email FROM usuarios";
+        List<User> users = new ArrayList<>();
 
-        try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
 
-            while (rs.next()) {
-                User usuario = new User(
-                        rs.getLong("id"),
-                        rs.getString("nome"),
-                        rs.getString("email")
-                );
-
-                usuarios.add(usuario);
+            while (resultSet.next()) {
+                users.add(mapToUser(resultSet));
             }
 
-            return usuarios;
+            return users;
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao listar usuários", e);
+            throw new IllegalStateException("Erro ao listar usuários.", e);
         }
     }
 
+    /**
+     * Busca usuário por ID.
+     * @param id
+     * @return Optional<User>
+     */
     public Optional<User> findById(Long id) {
 
-        String sql = """
-        SELECT id, nome, email
-        FROM usuarios
-        WHERE id = ?
-    """;
+        final String sql = """
+                SELECT id, nome, email
+                FROM usuarios
+                WHERE id = ?
+                """;
 
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            stmt.setLong(1, id);
+            statement.setLong(1, id);
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
 
-                if (rs.next()) {
-                    User user = new User(
-                            rs.getLong("id"),
-                            rs.getString("nome"),
-                            rs.getString("email")
-                    );
-                    return Optional.of(user);
+                if (resultSet.next()) {
+                    return Optional.of(mapToUser(resultSet));
                 }
 
                 return Optional.empty();
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao buscar usuário por id", e);
+            throw new IllegalStateException("Erro ao buscar usuário por ID.", e);
         }
     }
 
-    public int update(User usuario) {
+
+    /**
+     * Atualiza um usuário existente.
+     * @param user usuário a ser atualizado
+     * @return true se atualizado com sucesso
+     */
+    public boolean update(User user) {
 
         String sql = """
-            UPDATE usuarios
-            SET nome = ?, email = ?
-            WHERE id = ?
-        """;
+                UPDATE usuarios
+                SET nome = ?, email = ?
+                WHERE id = ?
+                """;
 
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            stmt.setString(1, usuario.getName());
-            stmt.setString(2, usuario.getEmail());
-            stmt.setLong(3, usuario.getId());
+            statement.setString(1, user.getName());
+            statement.setString(2, user.getEmail());
+            statement.setLong(3, user.getId());
 
-            return stmt.executeUpdate();
+            return statement.executeUpdate() == 1;
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao atualizar usuário", e);
+            throw new IllegalStateException("Erro ao atualizar usuário.", e);
         }
     }
 
-    public boolean deleteById(long id) {
+    /**
+     * Remove usuário pelo ID.
+     * @param id identificador
+     * @return true se removido com sucesso
+     */
+    public boolean deleteById(Long id) {
 
         String sql = "DELETE FROM usuarios WHERE id = ?";
 
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            stmt.setLong(1, id);
-            return stmt.executeUpdate() == 1;
+            statement.setLong(1, id);
+
+            return statement.executeUpdate() == 1;
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao deletar usuário com id: " + id, e);
+            throw new IllegalStateException("Erro ao remover usuário.", e);
         }
     }
+
+    /**
+     * Responsável por mapear um ResultSet
+     * para a entidade User.
+     * Centraliza a lógica de transformação.
+     */
+    private User mapToUser(ResultSet resultSet) throws SQLException {
+
+        Long id = resultSet.getLong("id");
+        String name = resultSet.getString("nome");
+        String email = resultSet.getString("email");
+
+        User user = new User(name, email);
+        user.assignId(id);
+
+        return user;
+    }
+
 }
