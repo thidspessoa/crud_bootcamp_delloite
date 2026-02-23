@@ -1,97 +1,96 @@
 package br.com.deloittebt.crud.model;
 
+import jakarta.persistence.*;
+
 /**
- * Camada de dominio responsavel por determinar a entidade, seus processos e regras de negócio.
+ * Entidade User do domínio do sistema.
+ * Esta classe representa um usuário e encapsula as regras de negócio.
+ * Está mapeada como entidade JPA para persistência com Hibernate.
  */
+@Entity
+@Table(name = "usuarios")
 public class User {
 
     /**
-     * Atributo de indentidade da entidade, a chave primária dessa entidade.
+     * Atributo de identidade da entidade, chave primária.
+     * ID é gerado automaticamente pelo banco de dados (auto-increment).
      */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * Atributo nome do usuário
+     * Atributo nome do usuário.
      */
+    @Column(name = "nome", nullable = false)
     private String name;
 
     /**
-     * Atributo E-mail do usuário
+     * Atributo email do usuário.
      */
+    @Column(name = "email", nullable = false)
     private String email;
 
     /**
-     * Construtor para criação de novo usuário (ainda não persistido).
-     * O ID começa como null e será atribuído após persistência. (Wrapper Class -> Long)
-     * @param name
-     * @param email
+     * Construtor protegido para uso do JPA.
+     * Necessário para reconstrução de instâncias pelo Hibernate.
      */
-    public User(String name, String email) {
-        // Validações
-        validateName(name);
-        validateEmail(email);
-
-        this.id = null;
-        this.name = name;
-        this.email = email;
+    protected User() {
+        // Usado pelo hibernate
     }
 
     /**
-     * Construtor para reconstrução da entidade a partir da persistência.
-     * Utilizado exclusivamente pelo repositório.
-     * @param id
-     * @param name
-     * @param email
+     * Construtor para criação de novo usuário (não persistido).
+     * O ID será atribuído automaticamente após persistência.
+     * @param name  Nome do usuário
+     * @param email Email do usuário
      */
-    public User(Long id, String name, String email) {
-
-        // Só atribui ID se o ID atual for vazil, ou seja, ainda não persistiu o usuario no banco
-        if (id == null) {
-            throw new IllegalArgumentException("Usuário persistido deve possuir ID.");
-        }
-
-        // Validações
+    public User(String name, String email) {
         validateName(name);
         validateEmail(email);
-
-        this.id = id;
         this.name = name;
         this.email = email;
+        this.id = null; // ID será atribuído pelo Hibernate após persistência
     }
+
+    // -------------------------
+    // GETTERS
+    // -------------------------
 
     public Long getId() {
         return id;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     public String getName() {
         return name;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    // -------------------------
+    // MÉTODOS DE DOMÍNIO
+    // -------------------------
+
     /**
-     * Método controlado para atribuição de ID.
-     * Só pode ser chamado uma única vez (após persistência).
-     * @param id
+     * Atribui ID ao usuário após persistência.
+     * Pode ser chamado apenas uma vez.
+     * @param id Identificador gerado pelo banco
      */
     public void assignId(Long id) {
-        if (this.id != null) { // Verifica se o atributo ID já está preenchido
+        if (this.id != null) {
             throw new IllegalStateException("ID já foi atribuído e não pode ser alterado.");
         }
-
-        if (id == null) { // Verifica se o ID passado como parametro não é nullo
+        if (id == null) {
             throw new IllegalArgumentException("ID não pode ser nulo.");
         }
-
         this.id = id;
     }
 
     /**
-     * Atualiza nome garantindo invariantes.
-     * @param name
-     * @return void
+     * Atualiza o nome do usuário, garantindo as invariantes do domínio.
+     * @param name Novo nome
      */
     public void changeName(String name) {
         validateName(name);
@@ -99,19 +98,22 @@ public class User {
     }
 
     /**
-     * Atualiza email garantindo invariantes.
-     * @param email
-     * @return void
+     * Atualiza o email do usuário, garantindo as invariantes do domínio.
+     * @param email Novo email
      */
     public void changeEmail(String email) {
         validateEmail(email);
         this.email = email;
     }
 
+    // -------------------------
+    // VALIDAÇÕES PRIVADAS
+    // -------------------------
+
     /**
      * Valida o atributo name
+     * Verifica se é vazil ou está em branco.
      * @param name
-     * @return void
      */
     private void validateName(String name) {
         if (name == null || name.isBlank()) {
@@ -121,15 +123,14 @@ public class User {
 
     /**
      * Valida o atributo email
+     * Verifica se está vazil, se contem @, ou se está em branco.
      * @param email
-     * @return void
      */
     private void validateEmail(String email) {
-        if (email == null || email.isBlank()) { // Email nulo ou em branco
+        if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email não pode ser vazio.");
         }
-
-        if (!email.contains("@")) { // Verifica se de fato é um email
+        if (!email.contains("@")) {
             throw new IllegalArgumentException("Email inválido.");
         }
     }

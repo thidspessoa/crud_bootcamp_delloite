@@ -4,27 +4,24 @@ import br.com.deloittebt.crud.model.User;
 import br.com.deloittebt.crud.repository.UserRepository;
 
 import java.util.List;
-import java.util.Optional;
+
 /**
- * Camada de serviço responsável por orquestrar as regras de negócio
- * relacionadas à entidade User.
- * Atua como intermediário entre a camada de apresentação (controller)
- * e a camada de persistência (repository).
- * Segue o princípio de responsabilidade única (SRP),
- * delegando persistência ao repositório e mantendo regras de negócio aqui.
+ * Camada de serviço responsável por regras de negócio da entidade User.
+ * Faz a mediação entre a camada de apresentação e o repositório de persistência.
+ * Segue o princípio SRP (Single Responsibility Principle) e valida regras de domínio.
  */
 public class UserService {
 
     /**
-     * Dependência responsável pelo acesso a dados.
-     * É final para garantir imutabilidade após construção.
+     * Repositório responsável pela persistência de usuários.
      */
     private final UserRepository userRepository;
 
     /**
-     * Construtor que recebe a dependência via injeção.
-     * Isso segue o princípio da Inversão de Dependência (DIP).
-     * @param userRepository repositório de persistência
+     * Construtor que recebe o repositório via injeção.
+     * Garante que a dependência não seja nula.
+     *
+     * @param userRepository instância do UserRepository
      */
     public UserService(UserRepository userRepository) {
         if (userRepository == null) {
@@ -34,7 +31,7 @@ public class UserService {
     }
 
     /**
-     * Cria um novo usuário.
+     * Cria um novo usuário e persiste no banco.
      * @param user usuário a ser criado
      * @return usuário persistido
      */
@@ -47,60 +44,56 @@ public class UserService {
      * Retorna todos os usuários cadastrados.
      * @return lista de usuários
      */
-    public List<User>  findAll() {
+    public List<User> findAll() {
         return userRepository.findAll();
     }
 
     /**
      * Busca um usuário pelo ID.
+     * Lança exceção se não encontrado.
+     *
      * @param id identificador do usuário
      * @return usuário encontrado
      */
     public User findById(Long id) {
         validateId(id);
-
         return userRepository.findById(id)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Usuário não encontrado com id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com id: " + id));
     }
 
-
     /**
-     * Atualiza os dados de um usuário existente.
-     * @param id identificador do usuário
-     * @param name novo nome
+     * Atualiza nome e email de um usuário existente.
+     *
+     * @param id    identificador do usuário
+     * @param name  novo nome
      * @param email novo email
      */
     public void update(Long id, String name, String email) {
         validateId(id);
-
         User user = findById(id);
-
         user.changeName(name);
         user.changeEmail(email);
-
         userRepository.update(user);
     }
 
-
     /**
      * Remove um usuário pelo ID.
+     * Lança exceção caso a remoção falhe.
+     *
      * @param id identificador do usuário
      */
     public void deleteById(Long id) {
         validateId(id);
-
         User user = findById(id);
-
-        boolean deleted = userRepository.deleteById(user.getId());
-
+        boolean deleted = userRepository.delete(user);
         if (!deleted) {
             throw new IllegalStateException("Erro ao remover usuário com id: " + id);
         }
     }
 
     /**
-     * Validação de regras básicas do usuário antes de persistir.
+     * Valida se o usuário não é nulo.
+     *
      * @param user usuário a validar
      */
     private void validateUser(User user) {
@@ -110,7 +103,8 @@ public class UserService {
     }
 
     /**
-     * Valida se o ID é válido.
+     * Valida se o ID é válido (não nulo e maior que zero).
+     *
      * @param id identificador a validar
      */
     private void validateId(Long id) {
@@ -118,6 +112,4 @@ public class UserService {
             throw new IllegalArgumentException("ID inválido.");
         }
     }
-
-
 }

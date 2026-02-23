@@ -2,37 +2,54 @@ import br.com.deloittebt.crud.model.User;
 import br.com.deloittebt.crud.repository.UserRepository;
 import br.com.deloittebt.crud.service.UserService;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Ponto de entrada da aplicação CRUD de usuários.
+ * Cria o EntityManager, instancia o repositório e o serviço,
+ * e fornece interface de console para interagir com os usuários.
+ */
 public class Main {
 
+    /**
+     * Método principal da aplicação.
+     * Configura JPA/Hibernate, inicializa repositório e serviço,
+     * e executa o loop do menu de console.
+     *
+     * @param args argumentos da linha de comando
+     */
     public static void main(String[] args) {
 
-        // Inicialização manual das dependências (injeção manual)
-        UserRepository userRepository = new UserRepository();
+        // Criação do EntityManagerFactory e EntityManager
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("thipssPU");
+        EntityManager em = emf.createEntityManager();
+
+        // Criação do repositório e serviço com injeção de dependência
+        UserRepository userRepository = new UserRepository(em);
         UserService userService = new UserService(userRepository);
 
         Scanner scanner = new Scanner(System.in);
-
         boolean running = true;
 
+        // Loop principal do menu de console
         while (running) {
             printMenu();
-
-            int option = readInteger(scanner);
+            int option = scanner.nextInt();
+            scanner.nextLine(); // limpa buffer
 
             try {
                 switch (option) {
-                    case 1 -> createUser(scanner, userService);
-                    case 2 -> listUsers(userService);
-                    case 3 -> findUserById(scanner, userService);
-                    case 4 -> updateUser(scanner, userService);
-                    case 5 -> deleteUser(scanner, userService);
-                    case 0 -> {
-                        running = false;
-                        System.out.println("Encerrando o sistema...");
-                    }
+                    case 1 -> createUser(userService, scanner);
+                    case 2 -> viewData(userService);
+                    case 3 -> findUserById(userService, scanner);
+                    case 4 -> updateUser(userService, scanner);
+                    case 5 -> deleteUser(userService, scanner);
+                    case 0 -> running = false;
                     default -> System.out.println("Opção inválida!");
                 }
             } catch (RuntimeException e) {
@@ -40,11 +57,14 @@ public class Main {
             }
         }
 
+        // Fecha recursos
         scanner.close();
+        em.close();
+        emf.close();
     }
 
     /**
-     * Exibe o menu principal.
+     * Imprime o menu principal no console.
      */
     private static void printMenu() {
         System.out.println("\n===== MENU =====");
@@ -58,99 +78,65 @@ public class Main {
     }
 
     /**
-     * Lê um número inteiro do usuário de forma segura.
+     * Cria um novo usuário lendo dados do console.
      */
-    private static int readInteger(Scanner scanner) {
-        int value = scanner.nextInt();
-        scanner.nextLine(); // limpa buffer
-        return value;
-    }
-
-    /**
-     * Fluxo de criação de usuário.
-     */
-    private static void createUser(Scanner scanner, UserService userService) {
-
+    private static void createUser(UserService userService, Scanner scanner) {
         System.out.print("Nome: ");
-        String name = scanner.nextLine();
-
+        String nome = scanner.nextLine();
         System.out.print("Email: ");
         String email = scanner.nextLine();
-
-        User user = new User(name, email);
+        User user = new User(nome, email);
         userService.create(user);
-
         System.out.println("Usuário criado com sucesso!");
-        listUsers(userService);
+        viewData(userService);
     }
 
     /**
-     * Lista todos os usuários cadastrados.
+     * Atualiza um usuário existente lendo dados do console.
      */
-    private static void listUsers(UserService userService) {
+    private static void updateUser(UserService userService, Scanner scanner) {
+        System.out.print("Informe o ID do usuário: ");
+        long id = scanner.nextLong();
+        scanner.nextLine();
+        System.out.print("Novo nome: ");
+        String nome = scanner.nextLine();
+        System.out.print("Novo email: ");
+        String email = scanner.nextLine();
+        userService.update(id, nome, email);
+        System.out.println("Usuário atualizado com sucesso!");
+        viewData(userService);
+    }
 
+    /**
+     * Remove um usuário pelo ID.
+     */
+    private static void deleteUser(UserService userService, Scanner scanner) {
+        System.out.print("Informe o ID do usuário: ");
+        long id = scanner.nextLong();
+        userService.deleteById(id);
+        System.out.println("Usuário removido com sucesso!");
+        viewData(userService);
+    }
+
+    /**
+     * Busca um usuário pelo ID.
+     */
+    private static void findUserById(UserService userService, Scanner scanner) {
+        System.out.print("Informe o ID do usuário: ");
+        long id = scanner.nextLong();
+        User user = userService.findById(id);
+        System.out.println(user);
+    }
+
+    /**
+     * Exibe todos os usuários cadastrados no console.
+     */
+    private static void viewData(UserService userService) {
         List<User> users = userService.findAll();
-
-        System.out.println("==============================");
-
         if (users.isEmpty()) {
             System.out.println("Nenhum usuário cadastrado.");
         } else {
             users.forEach(System.out::println);
         }
-
-        System.out.println("==============================");
-    }
-
-    /**
-     * Busca usuário por ID.
-     */
-    private static void findUserById(Scanner scanner, UserService userService) {
-
-        System.out.print("Informe o ID do usuário: ");
-        Long id = scanner.nextLong();
-        scanner.nextLine();
-
-        User user = userService.findById(id);
-
-        System.out.println("==============================");
-        System.out.println(user);
-        System.out.println("==============================");
-    }
-
-    /**
-     * Atualiza dados de um usuário.
-     */
-    private static void updateUser(Scanner scanner, UserService userService) {
-
-        System.out.print("Informe o ID do usuário: ");
-        Long id = scanner.nextLong();
-        scanner.nextLine();
-
-        System.out.print("Novo nome: ");
-        String name = scanner.nextLine();
-
-        System.out.print("Novo email: ");
-        String email = scanner.nextLine();
-
-        userService.update(id, name, email);
-
-        System.out.println("Usuário atualizado com sucesso!");
-        listUsers(userService);
-    }
-
-    /**
-     * Remove usuário pelo ID.
-     */
-    private static void deleteUser(Scanner scanner, UserService userService) {
-
-        System.out.print("Informe o ID do usuário: ");
-        Long id = scanner.nextLong();
-        scanner.nextLine();
-
-        userService.deleteById(id);
-
-        System.out.println("Usuário removido com sucesso!");
-        listUsers(userService);
     }
 }
