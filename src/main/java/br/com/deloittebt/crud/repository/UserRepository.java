@@ -1,9 +1,11 @@
-package br.com.deloittebt.crud.repository;
+package main.java.br.com.deloittebt.crud.repository;
 
-import br.com.deloittebt.crud.model.User;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import main.java.br.com.deloittebt.crud.model.User;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,46 +14,34 @@ import java.util.Optional;
  * Repositório responsável exclusivamente pela persistência da entidade User.
  * Utiliza JPA/Hibernate para abstrair toda a lógica de acesso a dados.
  * Não deve conter regras de negócio, apenas operações de CRUD.
+ * O Spring Boot gerencia transações automaticamente com @Transactional.
  */
+@Repository
 public class UserRepository {
 
     /**
      * EntityManager utilizado para realizar operações de persistência.
+     * Injetado automaticamente pelo Spring Boot via @PersistenceContext.
      */
-    private final EntityManager entityManager;
-
-    /**
-     * Construtor que recebe um EntityManager via injeção.
-     * @param entityManager gerenciador de entidades JPA/Hibernate
-     */
-    public UserRepository(EntityManager entityManager) {
-        if (entityManager == null) {
-            throw new IllegalArgumentException("EntityManager não pode ser nulo.");
-        }
-        this.entityManager = entityManager;
-    }
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Persiste um novo usuário no banco de dados.
      * O ID é gerado automaticamente pelo Hibernate.
+     *
      * @param user usuário a ser salvo
      * @return usuário persistido com ID preenchido
      */
+    @Transactional
     public User save(User user) {
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.persist(user); // Persistência JPA
-            transaction.commit();
-            return user;
-        } catch (RuntimeException e) {
-            if (transaction.isActive()) transaction.rollback();
-            throw e;
-        }
+        entityManager.persist(user); // Persistência JPA
+        return user;
     }
 
     /**
      * Retorna todos os usuários cadastrados no banco.
+     *
      * @return lista de usuários
      */
     public List<User> findAll() {
@@ -61,6 +51,7 @@ public class UserRepository {
 
     /**
      * Busca usuário por ID.
+     *
      * @param id identificador do usuário
      * @return Optional contendo o usuário se encontrado
      */
@@ -71,37 +62,25 @@ public class UserRepository {
 
     /**
      * Atualiza os dados de um usuário existente.
+     *
      * @param user usuário com dados modificados
      * @return true se a atualização ocorreu com sucesso
      */
+    @Transactional
     public boolean update(User user) {
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.merge(user); // Atualiza entidade gerenciada
-            transaction.commit();
-            return true;
-        } catch (RuntimeException e) {
-            if (transaction.isActive()) transaction.rollback();
-            throw e;
-        }
+        entityManager.merge(user); // Atualiza entidade gerenciada
+        return true;
     }
 
     /**
      * Remove usuário do banco.
+     *
      * @param user usuário a ser removido
      * @return true se a remoção ocorreu com sucesso
      */
+    @Transactional
     public boolean delete(User user) {
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.remove(entityManager.contains(user) ? user : entityManager.merge(user));
-            transaction.commit();
-            return true;
-        } catch (RuntimeException e) {
-            if (transaction.isActive()) transaction.rollback();
-            throw e;
-        }
+        entityManager.remove(entityManager.contains(user) ? user : entityManager.merge(user));
+        return true;
     }
 }

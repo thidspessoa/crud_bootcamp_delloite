@@ -1,24 +1,26 @@
-package br.com.deloittebt.crud.service;
-
-import br.com.deloittebt.crud.model.User;
-import br.com.deloittebt.crud.repository.UserRepository;
+package main.java.br.com.deloittebt.crud.service;
 
 import java.util.List;
+import main.java.br.com.deloittebt.crud.model.User;
+import main.java.br.com.deloittebt.crud.repository.UserRepository;
+import org.springframework.stereotype.Service;
 
 /**
  * Camada de serviço responsável por regras de negócio da entidade User.
  * Faz a mediação entre a camada de apresentação e o repositório de persistência.
  * Segue o princípio SRP (Single Responsibility Principle) e valida regras de domínio.
  */
+@Service
 public class UserService {
 
     /**
      * Repositório responsável pela persistência de usuários.
+     * Gerenciado pelo Spring via injeção de dependência.
      */
     private final UserRepository userRepository;
 
     /**
-     * Construtor que recebe o repositório via injeção.
+     * Construtor que recebe o repositório via injeção automatica do spring.
      * Garante que a dependência não seja nula.
      *
      * @param userRepository instância do UserRepository
@@ -32,20 +34,22 @@ public class UserService {
 
     /**
      * Cria um novo usuário e persiste no banco.
+     *
      * @param user usuário a ser criado
      * @return usuário persistido
      */
     public User create(User user) {
         validateUser(user);
-        return userRepository.save(user);
+        return userRepository.save(user); // Persiste via JPA
     }
 
     /**
      * Retorna todos os usuários cadastrados.
+     *
      * @return lista de usuários
      */
     public List<User> findAll() {
-        return userRepository.findAll();
+        return userRepository.findAll(); // Busca todos usuários via JPA
     }
 
     /**
@@ -71,9 +75,11 @@ public class UserService {
     public void update(Long id, String name, String email) {
         validateId(id);
         User user = findById(id);
+
         user.changeName(name);
         user.changeEmail(email);
-        userRepository.update(user);
+
+        userRepository.update(user); // Atualiza via JPA
     }
 
     /**
@@ -85,7 +91,9 @@ public class UserService {
     public void deleteById(Long id) {
         validateId(id);
         User user = findById(id);
-        boolean deleted = userRepository.delete(user);
+
+        boolean deleted = userRepository.delete(user); // Remove via JPA
+
         if (!deleted) {
             throw new IllegalStateException("Erro ao remover usuário com id: " + id);
         }

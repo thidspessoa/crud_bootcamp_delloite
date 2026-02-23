@@ -1,37 +1,37 @@
-import br.com.deloittebt.crud.model.User;
-import br.com.deloittebt.crud.repository.UserRepository;
-import br.com.deloittebt.crud.service.UserService;
+package main.java.br.com.deloittebt.crud;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
+import main.java.br.com.deloittebt.crud.model.User;
+import main.java.br.com.deloittebt.crud.service.UserService;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 
 import java.util.List;
 import java.util.Scanner;
 
 /**
- * Ponto de entrada da aplicação CRUD de usuários.
- * Cria o EntityManager, instancia o repositório e o serviço,
- * e fornece interface de console para interagir com os usuários.
+ * Ponto de entrada da aplicação CRUD de usuários via console.
+ *
+ * Agora integrado ao Spring Boot:
+ * - O Spring gerencia as dependências (injeção automática de UserService)
+ * - Permite expansão futura para Web ou APIs REST sem modificar a lógica de domínio
  */
+@SpringBootApplication
 public class Main {
 
     /**
      * Método principal da aplicação.
-     * Configura JPA/Hibernate, inicializa repositório e serviço,
-     * e executa o loop do menu de console.
+     * Inicializa o contexto do Spring Boot e obtém o UserService via injeção.
      *
      * @param args argumentos da linha de comando
      */
     public static void main(String[] args) {
 
-        // Criação do EntityManagerFactory e EntityManager
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("thipssPU");
-        EntityManager em = emf.createEntityManager();
+        // Inicializa Spring Boot e obtém o ApplicationContext
+        ApplicationContext context = SpringApplication.run(Main.class, args);
 
-        // Criação do repositório e serviço com injeção de dependência
-        UserRepository userRepository = new UserRepository(em);
-        UserService userService = new UserService(userRepository);
+        // Recupera o UserService gerenciado pelo Spring
+        UserService userService = context.getBean(UserService.class);
 
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
@@ -49,7 +49,11 @@ public class Main {
                     case 3 -> findUserById(userService, scanner);
                     case 4 -> updateUser(userService, scanner);
                     case 5 -> deleteUser(userService, scanner);
-                    case 0 -> running = false;
+                    case 0 -> {
+                        running = false;
+                        System.out.println("Saindo...");
+                        System.exit(0);
+                    }
                     default -> System.out.println("Opção inválida!");
                 }
             } catch (RuntimeException e) {
@@ -57,15 +61,9 @@ public class Main {
             }
         }
 
-        // Fecha recursos
         scanner.close();
-        em.close();
-        emf.close();
     }
 
-    /**
-     * Imprime o menu principal no console.
-     */
     private static void printMenu() {
         System.out.println("\n===== MENU =====");
         System.out.println("1 - Criar usuário");
@@ -77,9 +75,6 @@ public class Main {
         System.out.print("Escolha uma opção: ");
     }
 
-    /**
-     * Cria um novo usuário lendo dados do console.
-     */
     private static void createUser(UserService userService, Scanner scanner) {
         System.out.print("Nome: ");
         String nome = scanner.nextLine();
@@ -91,9 +86,6 @@ public class Main {
         viewData(userService);
     }
 
-    /**
-     * Atualiza um usuário existente lendo dados do console.
-     */
     private static void updateUser(UserService userService, Scanner scanner) {
         System.out.print("Informe o ID do usuário: ");
         long id = scanner.nextLong();
@@ -107,9 +99,6 @@ public class Main {
         viewData(userService);
     }
 
-    /**
-     * Remove um usuário pelo ID.
-     */
     private static void deleteUser(UserService userService, Scanner scanner) {
         System.out.print("Informe o ID do usuário: ");
         long id = scanner.nextLong();
@@ -118,9 +107,6 @@ public class Main {
         viewData(userService);
     }
 
-    /**
-     * Busca um usuário pelo ID.
-     */
     private static void findUserById(UserService userService, Scanner scanner) {
         System.out.print("Informe o ID do usuário: ");
         long id = scanner.nextLong();
@@ -128,9 +114,6 @@ public class Main {
         System.out.println(user);
     }
 
-    /**
-     * Exibe todos os usuários cadastrados no console.
-     */
     private static void viewData(UserService userService) {
         List<User> users = userService.findAll();
         if (users.isEmpty()) {
