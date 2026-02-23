@@ -1,6 +1,6 @@
-package br.com.deloittebt.crud.repository;
+package main.java.br.com.deloittebt.crud.repository;
 
-import br.com.deloittebt.crud.model.User;
+import main.java.br.com.deloittebt.crud.model.User;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

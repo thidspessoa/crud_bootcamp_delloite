@@ -1,4 +1,4 @@
-package br.com.deloittebt.crud.model;
+package main.java.br.com.deloittebt.crud.model;
 
 public class User {
 

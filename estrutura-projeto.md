@@ -1,0 +1,16 @@
+./bin/br/com/deloittebt/crud/model/User.class
+./bin/br/com/deloittebt/crud/repository/UserRepository.class
+./bin/br/com/deloittebt/crud/service/UserService.class
+./bin/main.java.Main.class
+./cruddb.mv.db
+./estrutura-projeto.md
+./out/production/thipss_java_bot_final/br/com/deloittebt/crud/model/User.class
+./out/production/thipss_java_bot_final/br/com/deloittebt/crud/repository/UserRepository.class
+./out/production/thipss_java_bot_final/br/com/deloittebt/crud/service/UserService.class
+./out/production/thipss_java_bot_final/main.java.Main.class
+./pom.xml
+./src/br/com/deloittebt/crud/model/User.java
+./src/br/com/deloittebt/crud/repository/UserRepository.java
+./src/br/com/deloittebt/crud/service/UserService.java
+./src/main.java.Main.java
+./thipss_java_bot_final.iml

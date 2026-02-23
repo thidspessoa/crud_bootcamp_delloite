@@ -1,7 +1,7 @@
-package br.com.deloittebt.crud.service;
+package main.java.br.com.deloittebt.crud.service;
 
-import br.com.deloittebt.crud.model.User;
-import br.com.deloittebt.crud.repository.UserRepository;
+import main.java.br.com.deloittebt.crud.model.User;
+import main.java.br.com.deloittebt.crud.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +20,7 @@ public class UserService {
     }
 
     // READ - LIST ALL
-    public List<User> findAll() {
+    public List<User>  findAll() {
         return userRepository.findAll();
     }
 

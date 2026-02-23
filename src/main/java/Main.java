@@ -1,5 +1,7 @@
-import br.com.deloittebt.crud.model.User;
-import br.com.deloittebt.crud.service.UserService;
+package main.java;
+
+import main.java.br.com.deloittebt.crud.model.User;
+import main.java.br.com.deloittebt.crud.service.UserService;
 
 import java.util.List;
 import java.util.Scanner;
