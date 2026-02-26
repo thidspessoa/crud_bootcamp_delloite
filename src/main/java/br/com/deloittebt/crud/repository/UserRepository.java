@@ -1,9 +1,9 @@
-package main.java.br.com.deloittebt.crud.repository;
+package br.com.deloittebt.crud.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import main.java.br.com.deloittebt.crud.model.User;
+import br.com.deloittebt.crud.model.User;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,8 +1,8 @@
-package main.java.br.com.deloittebt.crud.service;
+package br.com.deloittebt.crud.service;
 
 import java.util.List;
-import main.java.br.com.deloittebt.crud.model.User;
-import main.java.br.com.deloittebt.crud.repository.UserRepository;
+import br.com.deloittebt.crud.model.User;
+import br.com.deloittebt.crud.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 /**
@@ -33,20 +33,20 @@ public class UserService {
     }
 
     /**
-     * Cria um novo usuário e persiste no banco.
-     *
-     * @param user usuário a ser criado
-     * @return usuário persistido
+     * Cria um novo usuário com os dados fornecidos e persiste no banco.
+     * @param name Nome do usuário.
+     * @param email Email do usuário.
+     * @return Usuário persistido.
      */
-    public User create(User user) {
-        validateUser(user);
+    public User create(String name, String email) {
+        // As validações de name e email já estão no construtor de User
+        User user = new User(name, email);
         return userRepository.save(user); // Persiste via JPA
     }
 
     /**
      * Retorna todos os usuários cadastrados.
-     *
-     * @return lista de usuários
+     * @return Lista de usuários.
      */
     public List<User> findAll() {
         return userRepository.findAll(); // Busca todos usuários via JPA
@@ -55,9 +55,9 @@ public class UserService {
     /**
      * Busca um usuário pelo ID.
      * Lança exceção se não encontrado.
-     *
-     * @param id identificador do usuário
-     * @return usuário encontrado
+     * @param id Identificador do usuário.
+     * @return Usuário encontrado.
+     * @throws IllegalArgumentException se o ID for inválido ou usuário não encontrado.
      */
     public User findById(Long id) {
         validateId(id);
@@ -67,10 +67,10 @@ public class UserService {
 
     /**
      * Atualiza nome e email de um usuário existente.
-     *
-     * @param id    identificador do usuário
-     * @param name  novo nome
-     * @param email novo email
+     * @param id Identificador do usuário.
+     * @param name Novo nome.
+     * @param email Novo email.
+     * @throws IllegalArgumentException se o ID for inválido ou usuário não encontrado.
      */
     public void update(Long id, String name, String email) {
         validateId(id);
@@ -84,9 +84,9 @@ public class UserService {
 
     /**
      * Remove um usuário pelo ID.
-     * Lança exceção caso a remoção falhe.
-     *
-     * @param id identificador do usuário
+     * @param id Identificador do usuário.
+     * @throws IllegalArgumentException se o ID for inválido ou usuário não encontrado.
+     * @throws IllegalStateException se a remoção falhar.
      */
     public void deleteById(Long id) {
         validateId(id);
@@ -100,20 +100,9 @@ public class UserService {
     }
 
     /**
-     * Valida se o usuário não é nulo.
-     *
-     * @param user usuário a validar
-     */
-    private void validateUser(User user) {
-        if (user == null) {
-            throw new IllegalArgumentException("Usuário não pode ser nulo.");
-        }
-    }
-
-    /**
      * Valida se o ID é válido (não nulo e maior que zero).
-     *
-     * @param id identificador a validar
+     * @param id Identificador a validar.
+     * @throws IllegalArgumentException se o ID for nulo ou menor ou igual a zero.
      */
     private void validateId(Long id) {
         if (id == null || id <= 0) {

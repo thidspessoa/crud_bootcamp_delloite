@@ -1,4 +1,4 @@
-package main.java.br.com.deloittebt.crud.model;
+package br.com.deloittebt.crud.model;
 
 import jakarta.persistence.*;
 
@@ -32,11 +32,11 @@ public class User {
     private String email;
 
     /**
-     * Construtor protegido para uso do JPA.
-     * Necessário para reconstrução de instâncias pelo Hibernate.
+     * Construtor público sem argumentos, necessário para o data binding do Spring/Thymeleaf.
+     * As validações serão aplicadas quando os métodos changeName/changeEmail forem chamados ou no construtor completo.
      */
-    protected User() {
-        // Usado pelo hibernate
+    public User() {
+        // Construtor vazio para Spring/Thymeleaf
     }
 
     /**
