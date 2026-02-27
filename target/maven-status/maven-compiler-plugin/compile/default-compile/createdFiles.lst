@@ -1,0 +1,5 @@
+br/com/deloittebt/crud/CrudApplication.class
+br/com/deloittebt/crud/model/User.class
+br/com/deloittebt/crud/service/UserService.class
+br/com/deloittebt/crud/presentation/HomeController.class
+br/com/deloittebt/crud/repository/UserRepository.class

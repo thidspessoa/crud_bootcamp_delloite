@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/thipss_java_bot_final.iml" filepath="$PROJECT_DIR$/thipss_java_bot_final.iml" />
+      <module fileurl="file://$PROJECT_DIR$/crud.iml" filepath="$PROJECT_DIR$/crud.iml" />
     </modules>
   </component>
 </project>

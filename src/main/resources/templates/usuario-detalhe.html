@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhe do Usuário</title>
+
+    <!-- Bootstrap CSS -->
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Resultado da Busca</h2>
+        </div>
+        <div class="card-body">
+            <!-- Se o usuário for encontrado -->
+            <div th:if="${usuarioEncontrado != null}">
+                <div class="alert alert-success">
+                    <h4 class="alert-heading">Usuário Encontrado!</h4>
+                    <p><strong>ID:</strong> <span th:text="${usuarioEncontrado.id}">1</span></p>
+                    <p><strong>Nome:</strong> <span th:text="${usuarioEncontrado.name}">Nome</span></p>
+                    <p><strong>Email:</strong> <span th:text="${usuarioEncontrado.email}">email@example.com</span></p>
+                </div>
+            </div>
+
+            <!-- Se o usuário NÃO for encontrado -->
+            <div th:if="${erro != null}">
+                <div class="alert alert-danger">
+                    <h4 class="alert-heading">Erro!</h4>
+                    <p th:text="${erro}">Mensagem de erro aqui.</p>
+                </div>
+            </div>
+            
+            <a th:href="@{/}" class="btn btn-primary mt-3">Voltar para a Lista</a>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
